@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Fidget</string>
+    <string name="haptic_noise">Bzzt</string>
+
+    <integer-array name="haptic_number_array">
+        <item>4</item>
+        <item>16</item>
+        <item>6</item>
+        <item>13</item>
+        <item>12</item>
+        <item>3</item>
+        <item>7</item>
+        <item>3</item>
+        <item>17</item>
+        <item>9</item>
+        <item>0</item>
+        <item>1</item>
+        <item>8</item>
+    </integer-array>
+
+    <string-array name="haptic_name_array">
+        <item>   HapticFeedbackConstants.CLOCK_TICK        </item>
+        <item>   HapticFeedbackConstants.CONFIRM           </item>
+        <item>   HapticFeedbackConstants.CONTEXT_CLICK     </item>
+        <item>   HapticFeedbackConstants.GESTURE_END       </item>
+        <item>   HapticFeedbackConstants.GESTURE_START     </item>
+        <item>   HapticFeedbackConstants.KEYBOARD_PRESS    </item>
+        <item>   HapticFeedbackConstants.KEYBOARD_RELEASE  </item>
+        <item>   HapticFeedbackConstants.KEYBOARD_TAP      </item>
+        <item>   HapticFeedbackConstants.REJECT            </item>
+        <item>   HapticFeedbackConstants.TEXT_HANDLE_MOVE  </item>
+        <item>   HapticFeedbackConstants.LONG_PRESS        </item>
+        <item>   HapticFeedbackConstants.VIRTUAL_KEY       </item>
+        <item>   HapticFeedbackConstants.VIRTUAL_KEY_RELEASE </item>
+    </string-array>
+</resources>
