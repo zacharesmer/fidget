@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Fidget</string>
     <string name="haptic_noise">Bzzt</string>
+    <string name="haptic_number_input_label">Enter a number</string>
+    <string name="haptic_constant_spinner_label">Select a haptic constant</string>
+    <string name="propeller_description">Cartoon propeller</string>
 
     <integer-array name="haptic_number_array">
         <item>4</item>
