@@ -9,6 +9,9 @@ import android.widget.*
 import androidx.core.view.GestureDetectorCompat
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.FlingAnimation
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 //
 //class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
@@ -102,22 +105,53 @@ class MainActivity :
 
     private lateinit var mDetector: GestureDetectorCompat
     lateinit var flingAnimation: FlingAnimation
+    lateinit var spinny_image: ImageView
 
     // Called when the activity is first created.
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        // Instantiate the gesture detector with the
-        // application context and an implementation of
-        // GestureDetector.OnGestureListener
 
-        flingAnimation = FlingAnimation(findViewById(R.id.spinny_image), DynamicAnimation.ROTATION).apply{
+        spinny_image = findViewById(R.id.spinny_image)
+
+        val scale = resources.displayMetrics.density
+        val w = resources.displayMetrics.widthPixels
+        val h = resources.displayMetrics.heightPixels
+        Log.d(DEBUG_TAG, "width: $w, height: $h")
+        val centerX = w/2
+        val centerY = h/2
+        Log.d(DEBUG_TAG, "center: $centerX $centerY")
+
+        flingAnimation = FlingAnimation(spinny_image, DynamicAnimation.ROTATION).apply{
             setStartVelocity(0f)
+            setFriction(0.5f)
         }
+
+        flingAnimation.addUpdateListener(object : DynamicAnimation.OnAnimationUpdateListener {
+
+            var last = 0f
+            override fun onAnimationUpdate(
+                animation: DynamicAnimation<*>?,
+                value: Float,
+                velocity: Float
+            ) {
+                // check if the spinner is in a place where it should do something
+                var normalized_rotation = spinny_image.rotation.roundToInt() % 180
+                if (normalized_rotation < 10 && normalized_rotation > -10) {
+                    Log.d(DEBUG_TAG, "${normalized_rotation}")
+                    // keep track of last absolute rotation to avoid duplicates
+                    if (abs(spinny_image.rotation - last) > 20) {
+                        spinny_image.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    }
+                    last = spinny_image.rotation
+                }
+            }
+        })
 
         val gestureListener = object :GestureDetector.SimpleOnGestureListener() {
             override fun onDown(event: MotionEvent): Boolean {
 //                Log.d(DEBUG_TAG, "onDown: $event")
+                Log.d(DEBUG_TAG, "touch: ${event.getRawX()-centerX}, ${event.getRawY()-centerY}")
                 return true
             }
 
@@ -127,25 +161,38 @@ class MainActivity :
                 velocityX: Float,
                 velocityY: Float
             ): Boolean {
-                Log.d(DEBUG_TAG, "velocity x: $velocityX\nvelocity y: $velocityY")
-//                Log.d(DEBUG_TAG, "motion event: ")
-                flingAnimation.setStartVelocity(100f)
+
+                // coordinates of the events based around the center of the screen
+                var x1 = event1.getRawX() - centerX
+                var y1 = event1.getRawY() - centerY
+                var x2 = event2.getRawX() - centerX
+                var y2 = event2.getRawY() - centerY
+
+                // calculate the x and y velocity of the fling by hand since Android does
+                // it in some weird relative way
+                var vX = (x2-x1) / ((event2.eventTime - event1.eventTime))
+                var vY = (y2-y1) / ((event2.eventTime - event1.eventTime))
+
+//                // velocity vector
+//                Log.d(DEBUG_TAG, "velocity x: ${vX} velocity y: ${vY}")
+//                // point of initial contact (vector r)
+//                Log.d(DEBUG_TAG, "initial point of contact: $x1, $y1")
+
+                // get the z component of the cross product F X r to find torque
+                // F is approximated by the velocity and r is the point of contact
+                var torque_magnitude = x1 * vY - y1 * vX
+                // this is supposed to take care of the ill-defined mass and acceleration,
+                // turns out it works okay as 1
+                val force_tuning_constant = 1
+                var velocity = torque_magnitude/force_tuning_constant
+                flingAnimation.setStartVelocity(velocity)
                 flingAnimation.start()
-                Log.d(DEBUG_TAG, "onFling: $event1 $event2")
 
                 return true
             }
         }
         mDetector = GestureDetectorCompat(this, gestureListener)
-        findViewById<ImageView>(R.id.spinny_image).setOnTouchListener {_, event -> mDetector.onTouchEvent(event)}
+        spinny_image.setOnTouchListener {_, event -> mDetector.onTouchEvent(event)}
 
     }
-
-//    public override fun onTouchEvent(event: MotionEvent?): Boolean {
-//        return if (mDetector.onTouchEvent(event)) {
-//            true
-//        } else {
-//            super.onTouchEvent(event)
-//        }
-//    }
 }
